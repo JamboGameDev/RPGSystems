@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "RPGSystemsCharacter.generated.h"
@@ -67,6 +68,9 @@ private:
 
 	UPROPERTY(BLueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<URPGAttributeSet> RPGAttributes;
+
+	UPROPERTY(EditAnywhere, Category = "Custom Value|Character Info")
+	FGameplayTag CharacterTag;
 
 	void InitAbilityActorInfo();
 	

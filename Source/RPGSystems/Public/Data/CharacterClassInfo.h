@@ -32,5 +32,4 @@ class RPGSYSTEMS_API UCharacterClassInfo : public UDataAsset
 
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FGameplayTag, FCharacterClassDefaultInfo> ClassDefaultInfoMap;
-	
 };

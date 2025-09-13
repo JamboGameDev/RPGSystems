@@ -36,6 +36,5 @@ private:
 
 	UFUNCTION()
 	void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth);
-	
-	
+
 };
