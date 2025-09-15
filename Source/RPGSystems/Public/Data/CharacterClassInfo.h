@@ -18,10 +18,10 @@ struct FCharacterClassDefaultInfo
 	TSubclassOf<UGameplayEffect> DefaultAttributes;
 	
 	UPROPERTY(EditDefaultsOnly)
-	TArray<TSubclassOf<UGameplayAbility>> StringAbilities;
+	TArray<TSubclassOf<UGameplayAbility>> StartingAbilities;
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<TSubclassOf<UGameplayEffect>> StartingPassive;
+	TArray<TSubclassOf<UGameplayAbility>> StartingPassive;
 };
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -30,6 +30,7 @@ class RPGSYSTEMS_API UCharacterClassInfo : public UDataAsset
 {
 	GENERATED_BODY()
 
+public:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FGameplayTag, FCharacterClassDefaultInfo> ClassDefaultInfoMap;
 };

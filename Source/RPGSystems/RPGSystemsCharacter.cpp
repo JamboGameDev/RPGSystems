@@ -11,7 +11,10 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "AbilitySystem/RPGAbilitySystemComponent.h"
+#include "Data/CharacterClassInfo.h"
 #include "Game/PlayerState/RPGPlayerState.h"
+#include "Kismet/GameplayStatics.h"
+#include "Libraries/RPGAbilitySystemLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -119,6 +122,28 @@ void ARPGSystemsCharacter::InitAbilityActorInfo()
 		if (IsValid(RPGAbilitySystemComp))
 		{
 			RPGAbilitySystemComp->InitAbilityActorInfo(RPGPlayerState, this);
+
+			if (HasAuthority())
+			{
+				InitClassDefaults();
+			}
+		}
+	}
+}
+
+void ARPGSystemsCharacter::InitClassDefaults()
+{
+	if (!CharacterTag.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No character Tag Selected In This Character %s"), *GetNameSafe(this));
+	}
+	else if (UCharacterClassInfo* ClassInfo = URPGAbilitySystemLibrary::GetCharacterClassInfo(this))
+	{
+		if (const FCharacterClassDefaultInfo* SelectedClassInfo = ClassInfo->ClassDefaultInfoMap.Find(CharacterTag))
+		{
+			RPGAbilitySystemComp->AddCharacterAbilities(SelectedClassInfo->StartingAbilities);
+			RPGAbilitySystemComp->AddCharacterPassiveAbilities(SelectedClassInfo->StartingPassive);
+			RPGAbilitySystemComp->InitializeDefaultAttributes(SelectedClassInfo->DefaultAttributes);
 		}
 	}
 }

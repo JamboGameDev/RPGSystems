@@ -73,6 +73,7 @@ private:
 	FGameplayTag CharacterTag;
 
 	void InitAbilityActorInfo();
+	void InitClassDefaults();
 	
 
 public:
