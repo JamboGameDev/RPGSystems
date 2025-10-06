@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "AbilitySystem/RPGAbilitySystemComponent.h"
+#include "AbilitySystem/Attributes/RPGAttributeSet.h"
 #include "Data/CharacterClassInfo.h"
 #include "Game/PlayerState/RPGPlayerState.h"
 #include "Kismet/GameplayStatics.h"
@@ -57,6 +58,11 @@ ARPGSystemsCharacter::ARPGSystemsCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+}
+
+UAbilitySystemComponent* ARPGSystemsCharacter::GetAbilitySystemComponent() const
+{
+	return RPGAbilitySystemComp;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -122,6 +128,7 @@ void ARPGSystemsCharacter::InitAbilityActorInfo()
 		if (IsValid(RPGAbilitySystemComp))
 		{
 			RPGAbilitySystemComp->InitAbilityActorInfo(RPGPlayerState, this);
+			BindCallbacksToDependencies();
 
 			if (HasAuthority())
 			{
@@ -145,6 +152,34 @@ void ARPGSystemsCharacter::InitClassDefaults()
 			RPGAbilitySystemComp->AddCharacterPassiveAbilities(SelectedClassInfo->StartingPassive);
 			RPGAbilitySystemComp->InitializeDefaultAttributes(SelectedClassInfo->DefaultAttributes);
 		}
+	}
+}
+
+void ARPGSystemsCharacter::BindCallbacksToDependencies()
+{
+	if (IsValid(RPGAbilitySystemComp) && IsValid(RPGAttributes))
+	{
+		RPGAbilitySystemComp->GetGameplayAttributeValueChangeDelegate(RPGAttributes->GetHealthAttribute()).AddLambda(
+			[this] (const FOnAttributeChangeData& Data)
+			{
+				OnHealthChanged(Data.NewValue, RPGAttributes->GetMaxHealth());
+			});
+		
+		RPGAbilitySystemComp->GetGameplayAttributeValueChangeDelegate(RPGAttributes->GetManaAttribute()).AddLambda(
+			[this] (const FOnAttributeChangeData& Data)
+			{
+				OnManaChanged(Data.NewValue, RPGAttributes->GetMaxMana());
+			});
+		
+	}
+}
+
+void ARPGSystemsCharacter::BroadcastInitValues()
+{
+	if (IsValid(RPGAttributes))
+	{
+		OnHealthChanged(RPGAttributes->GetHealth(), RPGAttributes->GetMaxHealth());
+		OnManaChanged(RPGAttributes->GetMana(), RPGAttributes->GetMaxMana());
 	}
 }
 
