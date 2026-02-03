@@ -3,13 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "GameFramework/PlayerController.h"
 #include "RPGPlayerController.generated.h"
 
 class UInventoryComponent;
 
 UCLASS()
-class RPGSYSTEMS_API ARPGPlayerController : public APlayerController
+class RPGSYSTEMS_API ARPGPlayerController : public APlayerController, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -17,6 +18,7 @@ public:
 	ARPGPlayerController();
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess=true), Replicated)
