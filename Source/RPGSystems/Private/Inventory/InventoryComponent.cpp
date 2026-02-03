@@ -3,6 +3,9 @@
 
 #include "Inventory/InventoryComponent.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
+#include "Libraries/RPGAbilitySystemLibrary.h"
 #include "Net/UnrealNetwork.h"
 
 bool FPackagedInventory::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
@@ -56,6 +59,55 @@ void UInventoryComponent::AddItem(const FGameplayTag& ItemTag, int32 NumItems)
 void UInventoryComponent::ServerAddItem_Implementation(const FGameplayTag& ItemTag, int32 NumItems)
 {
 	AddItem(ItemTag, NumItems);
+}
+
+
+void UInventoryComponent::UseItem(const FGameplayTag& ItemTag, int32 NumItems)
+{
+	AActor* Owner = GetOwner();
+	if (!IsValid(Owner)) return;
+
+	if (!Owner->HasAuthority())
+	{
+		ServerUseItem(ItemTag, NumItems);
+		return;
+	}
+
+	FMasterItemDefinition Item = GetItemDefinitionByTag(ItemTag);
+	if (UAbilitySystemComponent *OwnerASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Owner))
+	{
+		if (IsValid(Item.ConsumableProps.ItemEffectClass))
+		{
+			const FGameplayEffectContextHandle ContextHandle = OwnerASC->MakeEffectContext();
+			const FGameplayEffectSpecHandle SpecHandle = OwnerASC->MakeOutgoingSpec(Item.ConsumableProps.ItemEffectClass,
+				Item.ConsumableProps.ItemEffectLevel, ContextHandle);
+			
+			OwnerASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+
+			AddItem(ItemTag, -1);
+
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Magenta,
+				FString::Printf(TEXT("Server Item Used: %s"), *ItemTag.ToString()));
+		}
+	}
+}
+
+void UInventoryComponent::ServerUseItem_Implementation(const FGameplayTag& ItemTag, int32 NumItems)
+{
+	UseItem(ItemTag, NumItems);
+}
+
+FMasterItemDefinition UInventoryComponent::GetItemDefinitionByTag(const FGameplayTag& ItemTag) const
+{
+	checkf(InventoryDefinitions, TEXT("No Inventory Defenitions Inside Component %s"), *GetNameSafe(this));
+	for (const auto& Pair : InventoryDefinitions->TagsToTables)
+	{
+		if (ItemTag.MatchesTag(Pair.Key))
+		{
+			return *URPGAbilitySystemLibrary::GetDataTableRowByTag<FMasterItemDefinition>(Pair.Value, ItemTag);
+		}
+	}
+	return FMasterItemDefinition();
 }
 
 void UInventoryComponent::PackageInventory(FPackagedInventory& OutInventory)

@@ -3,6 +3,7 @@
 
 #include "PlayerController/RPGPlayerController.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "Inventory/InventoryComponent.h"
 #include "Net/UnrealNetwork.h"
 
@@ -19,4 +20,9 @@ void ARPGPlayerController::GetLifetimeReplicatedProps(TArray<class FLifetimeProp
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ARPGPlayerController, InventoryComponent);
+}
+
+UAbilitySystemComponent* ARPGPlayerController::GetAbilitySystemComponent() const
+{
+	return UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn());
 }
